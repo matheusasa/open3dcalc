@@ -31,7 +31,7 @@ services:
       context: .
       target: web
     ports:
-      - "80:80"
+      - "3003:80"
     depends_on:
       migrate:
         condition: service_completed_successfully
