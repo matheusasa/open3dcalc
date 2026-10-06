@@ -26,6 +26,17 @@ services:
       db:
         condition: service_healthy
 
+  api:
+    build:
+      context: .
+      target: api
+    environment:
+      DATABASE_URL: postgresql://open3dcalc:open3dcalc@db:5432/open3dcalc
+      PORT: "3001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
   web:
     build:
       context: .
@@ -33,8 +44,7 @@ services:
     ports:
       - "3003:80"
     depends_on:
-      migrate:
-        condition: service_completed_successfully
+      - api
 
 volumes:
   pgdata:
