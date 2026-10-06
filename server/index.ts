@@ -13,27 +13,22 @@
  */
 import express from "express";
 import cors from "cors";
-import postgres from "postgres";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
+import { mountRoutes } from "./routes";
+import { getSqlClient } from "./db/database";
+import { requireAuth } from "./middleware/auth";
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// ── Better Auth routes ────────────────────────────────────────────────
+// ── Better Auth routes (no auth required) ─────────────────────────────
 app.all("/api/auth/*", toNodeHandler(auth));
 
-function getConnectionString(): string {
-  return (
-    process.env["DATABASE_URL"] ??
-    "postgresql://open3dcalc:open3dcalc@localhost:5432/open3dcalc"
-  );
-}
+const sql = getSqlClient();
 
-const sql = postgres(getConnectionString());
-
-// ── Health ────────────────────────────────────────────────────────────
+// ── Health check (no auth required) ───────────────────────────────────
 app.get("/api/health", async (_req, res) => {
   try {
     await sql`SELECT 1`;
@@ -43,6 +38,12 @@ app.get("/api/health", async (_req, res) => {
     res.status(503).json({ status: "error", message });
   }
 });
+
+// ── Authentication middleware for all other /api/* routes ──────────────
+app.use("/api", requireAuth);
+
+// ── Mounted CRUD routes (behind requireAuth) ──────────────────────────
+mountRoutes(app, sql);
 
 // ── List keys ─────────────────────────────────────────────────────────
 app.get("/api/storage", async (_req, res) => {
