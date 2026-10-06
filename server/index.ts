@@ -24,7 +24,7 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
 // ── Better Auth routes (no auth required) ─────────────────────────────
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/{*path}", toNodeHandler(auth));
 
 const sql = getSqlClient();
 
