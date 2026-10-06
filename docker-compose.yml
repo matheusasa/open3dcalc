@@ -16,7 +16,9 @@ services:
       retries: 5
 
   migrate:
-    build: .
+    build:
+      context: .
+      target: migrate
     command: sh -c "npm run db:migrate"
     environment:
       DATABASE_URL: postgresql://open3dcalc:open3dcalc@db:5432/open3dcalc
@@ -25,11 +27,11 @@ services:
         condition: service_healthy
 
   web:
-    build: .
+    build:
+      context: .
+      target: web
     ports:
       - "3000:80"
-    environment:
-      DATABASE_URL: postgresql://open3dcalc:open3dcalc@db:5432/open3dcalc
     depends_on:
       migrate:
         condition: service_completed_successfully
