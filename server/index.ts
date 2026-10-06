@@ -14,10 +14,15 @@
 import express from "express";
 import cors from "cors";
 import postgres from "postgres";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth";
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+
+// ── Better Auth routes ────────────────────────────────────────────────
+app.all("/api/auth/*", toNodeHandler(auth));
 
 function getConnectionString(): string {
   return (
